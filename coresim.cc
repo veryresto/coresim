@@ -173,7 +173,6 @@ int main (int argc, char *argv[])
     NodeContainer mobile,BS,core,router;
     mobile.Create(1);
     router.Create(2);
-    BS.Create(2);
     core.Create (1);
     NodeContainer mobileRouter = NodeContainer (mobile.Get (0), router.Get (0));
     NodeContainer routerAll = NodeContainer (router.Get (0), router.Get (1));
