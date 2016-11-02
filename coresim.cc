@@ -172,10 +172,8 @@ int main (int argc, char *argv[])
     NS_LOG_INFO ("Create nodes.");
     NodeContainer mobile,BS,core,router;
     mobile.Create(1);
-    router.Create(1);
     core.Create (1);
-    NodeContainer mobileRouter = NodeContainer (mobile.Get (0), router.Get (0));
-    NodeContainer routerCore = NodeContainer (router.Get (0), core.Get (0));
+    NodeContainer mobileCore = NodeContainer (mobile.Get (0), core.Get (0));
     
     DceManagerHelper dceManager;
         
@@ -184,12 +182,8 @@ int main (int argc, char *argv[])
     LinuxStackHelper stack;
     LinuxStackHelper routerStack;
     stack.Install (mobile);
-    routerStack.Install (router);
-    stack.Install (BS);
     stack.Install (core);
     dceManager.Install (mobile);
-    dceManager.Install (router);
-    dceManager.Install (BS);
     dceManager.Install (core);
     
     std::cout << "Setting memory size.." << std::endl;
@@ -228,9 +222,9 @@ int main (int argc, char *argv[])
     stack.SysctlSet (core.Get(0), ".net.core.netdev_max_backlog", "250000");
     
     stack.SysctlSet (mobile, ".net.ipv4.tcp_congestion_control", tcp_cc);
-    stack.SysctlSet (BS, ".net.ipv4.tcp_congestion_control", tcp_cc);
+    //stack.SysctlSet (BS, ".net.ipv4.tcp_congestion_control", tcp_cc);
     stack.SysctlSet (core, ".net.ipv4.tcp_congestion_control", tcp_cc);
-    stack.SysctlSet (router, ".net.ipv4.tcp_congestion_control", tcp_cc);
+    //stack.SysctlSet (router, ".net.ipv4.tcp_congestion_control", tcp_cc);
 
 #else
     NS_LOG_ERROR ("Linux kernel stack for DCE is not available. build with dce-linux module.");
@@ -261,42 +255,16 @@ int main (int argc, char *argv[])
 	p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
 	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
 	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
-	NetDeviceContainer chanMobileRouter = p2p.Install (mobileRouter);
-	
-	p2p.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
-	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
-	p2p.SetChannelAttribute ("coreRouter", UintegerValue (1));
-	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
-	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
-	NetDeviceContainer chanRouterCore = p2p.Install (routerCore);
+	NetDeviceContainer chanMobileCore = p2p.Install (mobileCore);
 
 	// IP Address
     NS_LOG_INFO ("Assign IP Addresses.");
     std::cout << "Setting IP addresses" << std::endl;
     Ipv4AddressHelper ipv4;
 
-	// for router to mobile and core
+	// for mobile and core
 	ipv4.SetBase ("10.9.1.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPMobileRouter = ipv4.Assign (chanMobileRouter);
-	
-	ipv4.SetBase ("10.9.2.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPRouterCore = ipv4.Assign (chanRouterCore);
-        
-	// Create router nodes, initialize routing database and set up the routing tables in the nodes.
-    std::cout << "Creating routing table" << std::endl;
-    std::ostringstream cmd_oss;
-    	
-    //Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-    // setup ip routes
-    // mobile
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.2.2"<<"/255.255.255.255" <<" via " <<"10.9.1.2";
-	LinuxStackHelper::RunIp (mobile.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
-    // core
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.9.2.1";
-	LinuxStackHelper::RunIp (core.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
+	Ipv4InterfaceContainer IPMobileRouter = ipv4.Assign (chanMobileCore);
 
 #ifdef KERNEL_STACK
     LinuxStackHelper::PopulateRoutingTables ();
@@ -362,7 +330,7 @@ int main (int argc, char *argv[])
 			dce.ResetArguments ();
 			dce.ResetEnvironment ();
 			dce.AddArgument ("-c");
-			dce.AddArgument ("10.9.2.2");
+			dce.AddArgument ("10.9.1.2");
 			dce.AddArgument ("-i");                
 			dce.AddArgument ("1");                        
 			dce.AddArgument ("--time");                
