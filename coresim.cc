@@ -176,10 +176,7 @@ int main (int argc, char *argv[])
     BS.Create(2);
     core.Create (1);
     NodeContainer mobileRouter = NodeContainer (mobile.Get (0), router.Get (0));
-    NodeContainer routerBSDown = NodeContainer (router.Get (0), BS.Get (0));
-    NodeContainer routerBSUp = NodeContainer (router.Get (0), BS.Get (1));
-    NodeContainer BSRouterDown = NodeContainer (BS.Get (0),router.Get (1));
-    NodeContainer BSRouterUp = NodeContainer (BS.Get (1), router.Get (1));
+    NodeContainer routerAll = NodeContainer (router.Get (0), router.Get (1));
     NodeContainer routerCore = NodeContainer (router.Get (1), core.Get (0));
     
     DceManagerHelper dceManager;
@@ -259,25 +256,12 @@ int main (int argc, char *argv[])
 	NS_LOG_INFO ("Create channels.");
 	PointToPointHelper p2p;
 	p2p.SetDeviceAttribute ("DataRate", StringValue (user_bw_down));
-	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
-	NetDeviceContainer chanRouterBSDown = p2p.Install (routerBSDown);
-	
-	p2p.SetDeviceAttribute ("DataRate", StringValue (user_bw_up));
-	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
-	NetDeviceContainer chanRouterBSUp = p2p.Install (routerBSUp);
-
-	//channel for core router to BS
-	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
-	NetDeviceContainer chanBSRouterDown = p2p.Install (BSRouterDown);
-
-	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
-	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
-	NetDeviceContainer chanBSRouterUp = p2p.Install (BSRouterUp);
+	NetDeviceContainer chanRouterAll = p2p.Install (routerAll);
 
 	// channel for mobile router to mobile and mobile router to core
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
-	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
+	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
 	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
 	p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
 	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
@@ -285,7 +269,7 @@ int main (int argc, char *argv[])
 	NetDeviceContainer chanMobileRouter = p2p.Install (mobileRouter);
 	
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
-	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
+	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
 	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
 	p2p.SetChannelAttribute ("coreRouter", UintegerValue (1));
 	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
@@ -296,19 +280,9 @@ int main (int argc, char *argv[])
     NS_LOG_INFO ("Assign IP Addresses.");
     std::cout << "Setting IP addresses" << std::endl;
     Ipv4AddressHelper ipv4;
-    //for router mobile and BS net devices
-	ipv4.SetBase ("10.1.1.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPRouterBSDown = ipv4.Assign (chanRouterBSDown);
-
-	ipv4.SetBase ("10.2.1.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPRouterBSUp = ipv4.Assign (chanRouterBSUp);
-	
-	//for router core and BS devices
-	ipv4.SetBase ("10.1.2.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPBSRouterDown = ipv4.Assign (chanBSRouterDown);
-	
-	ipv4.SetBase ("10.2.2.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPBSRouterUp= ipv4.Assign (chanBSRouterUp);
+    //for router All
+	ipv4.SetBase ("10.8.1.0", "255.255.255.0");
+	Ipv4InterfaceContainer IPRouterBSDown = ipv4.Assign (chanRouterAll);
 
 	// for router to mobile and core
 	ipv4.SetBase ("10.9.1.0", "255.255.255.0");
@@ -334,23 +308,13 @@ int main (int argc, char *argv[])
        
 	// mobile router
 	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.2.2"<<"/255.255.255.255" <<" via " <<"10.2.1.2";
+	cmd_oss << "route add "<< "10.9.2.2"<<"/255.255.255.255" <<" via " <<"10.8.1.2";
 	LinuxStackHelper::RunIp (router.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
 	    
 	// core router
 	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.1.2.1";
+	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.8.1.1";
 	LinuxStackHelper::RunIp (router.Get (1), Seconds (0.1), cmd_oss.str ().c_str ());
-	
-	// BS DOWNLINK
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.1.1.1";
-	LinuxStackHelper::RunIp (BS.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
-	
-	// BS UPLINK
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.2.2"<<"/255.255.255.255" <<" via " <<"10.2.2.2";
-	LinuxStackHelper::RunIp (BS.Get (1), Seconds (0.1), cmd_oss.str ().c_str ());
 
 #ifdef KERNEL_STACK
     LinuxStackHelper::PopulateRoutingTables ();
