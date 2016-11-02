@@ -172,11 +172,10 @@ int main (int argc, char *argv[])
     NS_LOG_INFO ("Create nodes.");
     NodeContainer mobile,BS,core,router;
     mobile.Create(1);
-    router.Create(2);
+    router.Create(1);
     core.Create (1);
     NodeContainer mobileRouter = NodeContainer (mobile.Get (0), router.Get (0));
-    NodeContainer routerAll = NodeContainer (router.Get (0), router.Get (1));
-    NodeContainer routerCore = NodeContainer (router.Get (1), core.Get (0));
+    NodeContainer routerCore = NodeContainer (router.Get (0), core.Get (0));
     
     DceManagerHelper dceManager;
         
@@ -250,16 +249,13 @@ int main (int argc, char *argv[])
 		std::cout << "Upload mode is used "<< std::endl;
 		mode = 1;
 	}
-
+	
 	// channel for mobile router to BS
 	NS_LOG_INFO ("Create channels.");
 	PointToPointHelper p2p;
-	p2p.SetDeviceAttribute ("DataRate", StringValue (user_bw_down));
-	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
-	NetDeviceContainer chanRouterAll = p2p.Install (routerAll);
 
 	// channel for mobile router to mobile and mobile router to core
-	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
+	p2p.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
 	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
 	p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
@@ -267,7 +263,7 @@ int main (int argc, char *argv[])
 	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
 	NetDeviceContainer chanMobileRouter = p2p.Install (mobileRouter);
 	
-	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
+	p2p.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
 	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
 	p2p.SetChannelAttribute ("coreRouter", UintegerValue (1));
@@ -279,9 +275,6 @@ int main (int argc, char *argv[])
     NS_LOG_INFO ("Assign IP Addresses.");
     std::cout << "Setting IP addresses" << std::endl;
     Ipv4AddressHelper ipv4;
-    //for router All
-	ipv4.SetBase ("10.8.1.0", "255.255.255.0");
-	Ipv4InterfaceContainer IPRouterBSDown = ipv4.Assign (chanRouterAll);
 
 	// for router to mobile and core
 	ipv4.SetBase ("10.9.1.0", "255.255.255.0");
@@ -304,16 +297,6 @@ int main (int argc, char *argv[])
 	cmd_oss.str ("");
 	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.9.2.1";
 	LinuxStackHelper::RunIp (core.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
-       
-	// mobile router
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.2.2"<<"/255.255.255.255" <<" via " <<"10.8.1.2";
-	LinuxStackHelper::RunIp (router.Get (0), Seconds (0.1), cmd_oss.str ().c_str ());
-	    
-	// core router
-	cmd_oss.str ("");
-	cmd_oss << "route add "<< "10.9.1.1"<<"/255.255.255.255" <<" via " <<"10.8.1.1";
-	LinuxStackHelper::RunIp (router.Get (1), Seconds (0.1), cmd_oss.str ().c_str ());
 
 #ifdef KERNEL_STACK
     LinuxStackHelper::PopulateRoutingTables ();
