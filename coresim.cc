@@ -251,10 +251,7 @@ int main (int argc, char *argv[])
 	// channel for mobile router to mobile and mobile router to core
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("1ms"));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
-	p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
-	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
-	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
+	
 	NetDeviceContainer chanMobileCore = p2p.Install (mobileCore);
 
 	// IP Address
