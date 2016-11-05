@@ -383,10 +383,10 @@ if (!downloadMode) {
 	//channel for core router to BS
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue (delay_oss.str ().c_str ()));
-	p2p.SetChannelAttribute ("Jitter", UintegerValue (1));
-	p2p.SetChannelAttribute ("k", DoubleValue (k_dw));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (0));
-	p2p.SetChannelAttribute ("theta", DoubleValue (theta_dw));
+	//p2p.SetChannelAttribute ("Jitter", UintegerValue (1));
+	//p2p.SetChannelAttribute ("k", DoubleValue (k_dw));
+	//p2p.SetChannelAttribute ("transparent", UintegerValue (0));
+	//p2p.SetChannelAttribute ("theta", DoubleValue (theta_dw));
 	NetDeviceContainer chanBSRouterDown = p2p.Install (BSRouterDown);
 
 	delay_oss.str ("");
@@ -395,27 +395,27 @@ if (!downloadMode) {
 
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue (delay_oss.str ().c_str ()));
-	p2p.SetChannelAttribute ("Jitter", UintegerValue (1));
-	p2p.SetChannelAttribute ("k", DoubleValue (k_up));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (0));
-	p2p.SetChannelAttribute ("theta", DoubleValue (theta_up));
+	//p2p.SetChannelAttribute ("Jitter", UintegerValue (1));
+	//p2p.SetChannelAttribute ("k", DoubleValue (k_up));
+	//p2p.SetChannelAttribute ("transparent", UintegerValue (0));
+	//p2p.SetChannelAttribute ("theta", DoubleValue (theta_up));
 	NetDeviceContainer chanBSRouterUp = p2p.Install (BSRouterUp);
 
 // channel for mobile router to mobile and mobile router to core
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
-	p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
-	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
-	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
+	//p2p.SetChannelAttribute ("transparent", UintegerValue (1));
+	//p2p.SetChannelAttribute ("coreRouter", UintegerValue (0));
+	//p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
+	//p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
 	NetDeviceContainer chanMobileRouter = p2p.Install (mobileRouter);
 	
 	p2p.SetDeviceAttribute ("DataRate", StringValue ("200Gbps"));
 	p2p.SetChannelAttribute ("Delay", StringValue ("0ms"));
-	p2p.SetChannelAttribute ("transparent", UintegerValue (1));
-	p2p.SetChannelAttribute ("coreRouter", UintegerValue (1));
-	p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
-	p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
+	//p2p.SetChannelAttribute ("transparent", UintegerValue (1));
+	//p2p.SetChannelAttribute ("coreRouter", UintegerValue (1));
+	//p2p.SetChannelAttribute ("monitor", UintegerValue (monitor));
+	//p2p.SetChannelAttribute ("mode",UintegerValue (mode) );
 	NetDeviceContainer chanRouterCore = p2p.Install (routerCore);
 	
 
